@@ -98,14 +98,13 @@ class PantryModel private constructor() {
     }
 
     fun searchItems(query: String): ArrayList<PantryItem> {
-        if (query.isEmpty()) return ArrayList(items)
+        if (query.isEmpty()) return ArrayList(items)  // return all items if quesy is empty
 
         val results = ArrayList<PantryItem>()
         val lowerQuery = query.lowercase()
 
         for (item in items) {
-            if (item.name.lowercase().contains(lowerQuery) ||
-                item.category.lowercase().contains(lowerQuery)) {
+            if (item.name.lowercase().contains(lowerQuery)) {
                 results.add(item)
             }
         }
