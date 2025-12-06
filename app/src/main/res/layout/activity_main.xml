@@ -10,6 +10,7 @@
 
     <!-- Title -->
     <TextView
+        android:id="@+id/titleText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Pantry Tracker"
@@ -60,7 +61,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Total Value: $0.00"
-            android:textSize="14sp"
+            android:textSize="18sp"
             android:textColor="#333333" />
 
         <TextView
@@ -69,7 +70,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Total Items: 0"
-            android:textSize="14sp"
+            android:textSize="18sp"
             android:textColor="#333333"
             android:gravity="end" />
     </LinearLayout>

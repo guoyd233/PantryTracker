@@ -1,5 +1,6 @@
 package com.example.PantryTracker
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -13,6 +14,8 @@ class StatsActivity : AppCompatActivity() {
     private lateinit var backButton: Button
     private lateinit var progressBar: ProgressBar
     private lateinit var progressLabel: TextView
+
+    private lateinit var prefs: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +31,9 @@ class StatsActivity : AppCompatActivity() {
         backButton = findViewById(R.id.backButton)
         progressBar = findViewById(R.id.progressBar)
         progressLabel = findViewById(R.id.progressLabel)
+
+        prefs = getSharedPreferences("PantryPrefs", MODE_PRIVATE)
+        applyUserPreferences()
 
         // Back button
         backButton.setOnClickListener {
@@ -71,5 +77,16 @@ class StatsActivity : AppCompatActivity() {
         progressBar.max = 100
         progressBar.progress = if (totalItems > 100) 100 else totalItems
         progressLabel.text = "Pantry Fullness: $totalItems / 100"
+    }
+
+    private fun applyUserPreferences() {
+
+        val theme = prefs.getString("theme", "pink")
+
+        val bgColor = if (theme == "pink") R.color.pinkTheme else R.color.blueTheme
+        findViewById<LinearLayout>(R.id.main).setBackgroundColor(resources.getColor(bgColor))
+
+
+
     }
 }

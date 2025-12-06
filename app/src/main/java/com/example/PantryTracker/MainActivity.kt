@@ -22,26 +22,29 @@ class MainActivity : AppCompatActivity() {
     private lateinit var adView: AdView
     private lateinit var prefs: SharedPreferences
 
+    private lateinit var titleText: TextView
+
     private var items = ArrayList<PantryItem>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Initialize Model
         model = PantryModel.getInstance()
         model.initialize(this)
 
-        // Initialize preferences
         prefs = getSharedPreferences("PantryPrefs", MODE_PRIVATE)
 
-        // Find views
         listView = findViewById(R.id.itemListView)
         searchEditText = findViewById(R.id.searchEditText)
         addButton = findViewById(R.id.addButton)
         statsButton = findViewById(R.id.statsButton)
         totalValueText = findViewById(R.id.totalValueText)
         totalItemsText = findViewById(R.id.totalItemsText)
+
+
+        applyUserPreferences()
+
 
         // Set up list view
         refreshList()
@@ -136,4 +139,18 @@ class MainActivity : AppCompatActivity() {
 
         adView.loadAd(adRequest)
     }
+
+    private fun applyUserPreferences() {
+        val theme = prefs.getString("theme", "pink")
+        titleText = findViewById(R.id.titleText)
+
+        val bgColor = if (theme == "pink") R.color.pinkTheme else R.color.blueTheme
+        findViewById<LinearLayout>(R.id.main).setBackgroundColor(resources.getColor(bgColor))
+
+        val username = prefs.getString("username", "User")
+        titleText.text = "$username's Pantry Tracker"
+
+
+    }
+
 }

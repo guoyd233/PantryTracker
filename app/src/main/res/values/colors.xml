@@ -11,4 +11,7 @@
     <color name="green_dark">#2E7D32</color>
     <color name="blue_primary">#2196F3</color>
     <color name="gray_background">#F5F5F5</color>
+
+    <color name="pinkTheme">#FFC0CB</color>
+    <color name="blueTheme">#ADD8E6</color>
 </resources>

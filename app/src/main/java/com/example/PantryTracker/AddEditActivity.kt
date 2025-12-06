@@ -1,5 +1,6 @@
 package com.example.PantryTracker
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +17,7 @@ class AddEditActivity : AppCompatActivity() {
     private lateinit var ratingBar: RatingBar
     private lateinit var seekBar: SeekBar
     private lateinit var seekBarLabel: TextView
+    private lateinit var prefs: SharedPreferences
 
     private var editingItem: PantryItem? = null
 
@@ -36,6 +38,9 @@ class AddEditActivity : AppCompatActivity() {
         ratingBar = findViewById(R.id.ratingBar)
         seekBar = findViewById(R.id.seekBar)
         seekBarLabel = findViewById(R.id.seekBarLabel)
+
+        prefs = getSharedPreferences("PantryPrefs", MODE_PRIVATE)
+        applyUserPreferences()
 
         // Set up category spinner
         val categories = arrayOf("Dairy", "Vegetables", "Fruits", "Meat", "Grains", "Snacks", "Beverages", "Other")
@@ -152,5 +157,16 @@ class AddEditActivity : AppCompatActivity() {
         }
 
         finish()
+    }
+
+    private fun applyUserPreferences() {
+
+        val theme = prefs.getString("theme", "pink")
+
+        val bgColor = if (theme == "pink") R.color.pinkTheme else R.color.blueTheme
+        findViewById<LinearLayout>(R.id.main).setBackgroundColor(resources.getColor(bgColor))
+
+
+
     }
 }
