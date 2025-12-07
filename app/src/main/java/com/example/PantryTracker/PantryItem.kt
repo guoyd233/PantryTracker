@@ -10,7 +10,5 @@ data class PantryItem(
     var category: String = "",
     var timestamp: Long = System.currentTimeMillis()
 ) : Serializable {
-
-    // Empty constructor for Firebase
     constructor() : this("", "", 0, 0.0, "", System.currentTimeMillis())
 }

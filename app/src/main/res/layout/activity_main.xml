@@ -8,7 +8,6 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <!-- Title -->
     <TextView
         android:id="@+id/titleText"
         android:layout_width="match_parent"
@@ -16,11 +15,10 @@
         android:text="Pantry Tracker"
         android:textSize="28sp"
         android:textStyle="bold"
-        android:textColor="#2E7D32"
+        android:textColor="@color/green"
         android:gravity="center"
         android:padding="16dp" />
 
-    <!-- Search Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -34,7 +32,7 @@
             android:layout_weight="1"
             android:hint="Search items..."
             android:padding="12dp"
-            android:background="#FFFFFF"
+            android:background="@color/white"
             android:textSize="16sp" />
 
         <Button
@@ -42,16 +40,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Search"
-            android:backgroundTint="#4CAF50"
-            android:textColor="#FFFFFF" />
+            android:backgroundTint="@color/green"
+            android:textColor="@color/white"
+            />
     </LinearLayout>
 
-    <!-- Stats Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:background="#FFFFFF"
+        android:background="@color/white"
         android:padding="12dp"
         android:layout_marginBottom="16dp">
 
@@ -62,7 +60,7 @@
             android:layout_weight="1"
             android:text="Total Value: $0.00"
             android:textSize="18sp"
-            android:textColor="#333333" />
+            android:textColor="@color/black" />
 
         <TextView
             android:id="@+id/totalItemsText"
@@ -71,21 +69,19 @@
             android:layout_weight="1"
             android:text="Total Items: 0"
             android:textSize="18sp"
-            android:textColor="#333333"
+            android:textColor="@color/black"
             android:gravity="end" />
     </LinearLayout>
 
-    <!-- List View -->
     <ListView
         android:id="@+id/itemListView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="#FFFFFF"
+        android:background="@color/white"
         android:divider="#E0E0E0"
         android:dividerHeight="1dp" />
 
-    <!-- Buttons -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -100,8 +96,8 @@
             android:layout_weight="1"
             android:text="Add Item"
             android:textSize="16sp"
-            android:backgroundTint="#4CAF50"
-            android:textColor="#FFFFFF"
+            android:backgroundTint="@color/green"
+            android:textColor="@color/white"
             android:layout_marginEnd="8dp" />
 
         <Button
@@ -111,11 +107,10 @@
             android:layout_weight="1"
             android:text="View Stats"
             android:textSize="16sp"
-            android:backgroundTint="#2196F3"
-            android:textColor="#FFFFFF" />
+            android:backgroundTint="@color/green"
+            android:textColor="@color/white" />
     </LinearLayout>
 
-    <!-- Ad View -->
     <LinearLayout
         android:id="@+id/ad_view"
         android:layout_width="match_parent"

@@ -21,10 +21,8 @@ class StatsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_stats)
 
-        // Initialize Model
         model = PantryModel.getInstance()
 
-        // Find views
         totalValueText = findViewById(R.id.totalValueText)
         totalItemsText = findViewById(R.id.totalItemsText)
         categoryListView = findViewById(R.id.categoryListView)
@@ -35,12 +33,9 @@ class StatsActivity : AppCompatActivity() {
         prefs = getSharedPreferences("PantryPrefs", MODE_PRIVATE)
         applyUserPreferences()
 
-        // Back button
         backButton.setOnClickListener {
             finish()
         }
-
-        // Load statistics
         loadStats()
     }
 
@@ -49,34 +44,31 @@ class StatsActivity : AppCompatActivity() {
         val totalValue = model.getTotalValue()
         val totalItems = model.getTotalItems()
 
-        // Display totals
         totalValueText.text = "Total Value: $${String.format("%.2f", totalValue)}"
-        totalItemsText.text = "Total Items: $totalItems"
+        totalItemsText.text = "Total Number of Items: $totalItems"
 
-        // Calculate category statistics
-        val categoryMap = HashMap<String, Int>()
+        val itemCountByCategory = HashMap<String, Int>()
         for (item in items) {
-            val count = categoryMap.getOrDefault(item.category, 0)
-            categoryMap[item.category] = count + item.quantity
+            val count = itemCountByCategory.getOrDefault(item.category, 0)
+            itemCountByCategory[item.category] = count + item.quantity
         }
 
-        // Display by category
         val categoryList = ArrayList<String>()
-        for ((category, count) in categoryMap) {
+        for ((category, count) in itemCountByCategory) {
             categoryList.add("$category: $count items")
         }
 
         if (categoryList.isEmpty()) {
-            categoryList.add("No items in pantry")
+            categoryList.add("no items")
         }
 
         val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, categoryList)
         categoryListView.adapter = adapter
 
-        // Set up progress bar (representing pantry fullness, max 100 items)
+        // progress bar
         progressBar.max = 100
         progressBar.progress = if (totalItems > 100) 100 else totalItems
-        progressLabel.text = "Pantry Fullness: $totalItems / 100"
+        progressLabel.text = "Pantry size: $totalItems / 100"
     }
 
     private fun applyUserPreferences() {

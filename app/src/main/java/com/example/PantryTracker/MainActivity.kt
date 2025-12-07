@@ -31,7 +31,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         model = PantryModel.getInstance()
-        model.initialize(this)
+        model.initialize()
+        model.setOnItemsChangedListener {
+            refreshList()
+            updateStats()
+        }
 
         prefs = getSharedPreferences("PantryPrefs", MODE_PRIVATE)
 
@@ -73,14 +77,19 @@ class MainActivity : AppCompatActivity() {
         listView.setOnItemClickListener { _, _, position, _ ->
             val item = items[position]
             val intent = Intent(this, AddEditActivity::class.java)
-            intent.putExtra("item", item)
+            intent.putExtra("item_id", item.id)
+            intent.putExtra("item_name", item.name)
+            intent.putExtra("item_quantity", item.quantity)
+            intent.putExtra("item_price", item.price)
+            intent.putExtra("item_category", item.category)
+            intent.putExtra("item_timestamp", item.timestamp)
             startActivity(intent)
         }
 
         // Item long click - delete
         listView.setOnItemLongClickListener { _, _, position, _ ->
             val item = items[position]
-            model.deleteItem(item.id, this)
+            model.deleteItem(item.id)
             refreshList()
             true
         }
