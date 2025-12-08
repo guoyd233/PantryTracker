@@ -3,14 +3,18 @@ package com.example.PantryTracker
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.speech.SpeechRecognizer
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
+import android.content.pm.PackageManager
+import android.speech.RecognizerIntent
+import android.speech.RecognitionListener
+
 
 class MainActivity : AppCompatActivity() {
-
     private lateinit var model: PantryModel
     private lateinit var listView: ListView
     private lateinit var searchEditText: EditText
@@ -21,10 +25,14 @@ class MainActivity : AppCompatActivity() {
     private lateinit var adapter: ArrayAdapter<String>
     private lateinit var adView: AdView
     private lateinit var prefs: SharedPreferences
-
     private lateinit var titleText: TextView
-
     private var items = ArrayList<PantryItem>()
+
+    private val RECORD_AUDIO_PERMISSION_CODE = 1001
+    private lateinit var speechRecognizer: SpeechRecognizer
+    private lateinit var speechIntent: Intent
+    private lateinit var micButton: ImageButton
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +54,12 @@ class MainActivity : AppCompatActivity() {
         totalValueText = findViewById(R.id.totalValueText)
         totalItemsText = findViewById(R.id.totalItemsText)
 
+
+        micButton = findViewById(R.id.micButton)
+        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
+        speechIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+        speechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+        speechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US")
 
         applyUserPreferences()
 
@@ -93,6 +107,20 @@ class MainActivity : AppCompatActivity() {
             refreshList()
             true
         }
+
+        micButton.setOnClickListener {
+            if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+
+                requestPermissions(
+                    arrayOf(android.Manifest.permission.RECORD_AUDIO),
+                    RECORD_AUDIO_PERMISSION_CODE
+                )
+            } else {
+                speechRecognizer.startListening(speechIntent)
+            }
+        }
+
 
         // Set up advertising
         setupAdvertising()
@@ -161,5 +189,45 @@ class MainActivity : AppCompatActivity() {
 
 
     }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode == RECORD_AUDIO_PERMISSION_CODE &&
+            grantResults.isNotEmpty() &&
+            grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+            speechRecognizer.startListening(speechIntent)
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        speechRecognizer.setRecognitionListener(object : RecognitionListener {
+            override fun onResults(results: Bundle?) {
+                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                val spokenText = matches?.get(0) ?: ""
+
+                // Put the spoken text into the search bar
+                searchEditText.setText(spokenText)
+
+                // Trigger your existing search button
+                val searchButton = findViewById<Button>(R.id.searchButton)
+                searchButton.performClick()
+            }
+
+            override fun onError(error: Int) {}
+            override fun onReadyForSpeech(params: Bundle?) {}
+            override fun onBeginningOfSpeech() {}
+            override fun onRmsChanged(rmsdB: Float) {}
+            override fun onBufferReceived(buffer: ByteArray?) {}
+            override fun onEndOfSpeech() {}
+            override fun onPartialResults(partialResults: Bundle?) {}
+            override fun onEvent(eventType: Int, params: Bundle?) {}
+        })
+    }
+
+
 
 }

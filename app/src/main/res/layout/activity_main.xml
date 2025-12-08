@@ -40,9 +40,22 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Search"
+
             android:backgroundTint="@color/green"
             android:textColor="@color/white"
             />
+
+
+        <ImageButton
+            android:id="@+id/micButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_btn_speak_now"
+            android:contentDescription="Mic Button" />
+
+
     </LinearLayout>
 
     <LinearLayout
