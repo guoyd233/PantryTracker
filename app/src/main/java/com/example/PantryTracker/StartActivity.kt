@@ -18,19 +18,24 @@ class StartActivity : AppCompatActivity() {
 
         prefs = getSharedPreferences("PantryPrefs", MODE_PRIVATE)
 
-
-
+        val usernameEditText = findViewById<EditText>(R.id.usernameEditText)
         val themeGroup = findViewById<RadioGroup>(R.id.themeGroup)
-
-
         val themePink = findViewById<RadioButton>(R.id.themePink)
         val themeBlue = findViewById<RadioButton>(R.id.themeBlue)
-
         val saveButton = findViewById<Button>(R.id.saveButton)
 
+        // show last saved username and theme
+        prefs.getString("username", null)?.let { savedName ->
+            if (savedName.isNotBlank()) {
+                usernameEditText.setText(savedName)
+            }
+        }
+        when (prefs.getString("theme", null)) {
+            "pink" -> themePink.isChecked = true
+            "blue" -> themeBlue.isChecked = true
+        }
 
         saveButton.setOnClickListener {
-            val usernameEditText = findViewById<EditText>(R.id.usernameEditText)
             val username = usernameEditText.text.toString().trim()
             val editor = prefs.edit()
             val selectedThemeId = themeGroup.checkedRadioButtonId
@@ -40,8 +45,6 @@ class StartActivity : AppCompatActivity() {
             if (selectedThemeId != -1) {
                 editor.putString("theme", if (selectedThemeId == R.id.themePink) "pink" else "blue")
             }
-
-
 
             editor.apply()
 

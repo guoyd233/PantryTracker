@@ -1,20 +1,23 @@
 package com.example.PantryTracker
 
+import android.Manifest
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.os.Bundle
-import android.speech.SpeechRecognizer
+import android.speech.RecognizerIntent
 import android.widget.*
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
-import android.content.pm.PackageManager
-import android.speech.RecognizerIntent
-import android.speech.RecognitionListener
-
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
+
     private lateinit var model: PantryModel
     private lateinit var listView: ListView
     private lateinit var searchEditText: EditText
@@ -25,14 +28,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var adapter: ArrayAdapter<String>
     private lateinit var adView: AdView
     private lateinit var prefs: SharedPreferences
-    private lateinit var titleText: TextView
-    private var items = ArrayList<PantryItem>()
-
-    private val RECORD_AUDIO_PERMISSION_CODE = 1001
-    private lateinit var speechRecognizer: SpeechRecognizer
-    private lateinit var speechIntent: Intent
     private lateinit var micButton: ImageButton
+    private lateinit var speechLauncher: ActivityResultLauncher<Intent>
 
+    private lateinit var titleText: TextView
+
+    private var items = ArrayList<PantryItem>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,25 +50,18 @@ class MainActivity : AppCompatActivity() {
 
         listView = findViewById(R.id.itemListView)
         searchEditText = findViewById(R.id.searchEditText)
+        micButton = findViewById(R.id.micButton)
         addButton = findViewById(R.id.addButton)
         statsButton = findViewById(R.id.statsButton)
         totalValueText = findViewById(R.id.totalValueText)
         totalItemsText = findViewById(R.id.totalItemsText)
 
 
-        micButton = findViewById(R.id.micButton)
-        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
-        speechIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
-        speechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-        speechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US")
-
         applyUserPreferences()
 
-
-        // Set up list view
         refreshList()
 
-        // Search functionality
+
         val searchButton = findViewById<Button>(R.id.searchButton)
         searchButton.setOnClickListener {
             val query = searchEditText.text.toString()
@@ -75,19 +69,44 @@ class MainActivity : AppCompatActivity() {
             updateListView()
         }
 
-        // Add button
+        // voice search
+        val permissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+                if (granted) startVoiceRecognition()
+            }
+        speechLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == RESULT_OK) {
+                    val spokenText = result.data
+                        ?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+                        ?.firstOrNull()
+                    if (!spokenText.isNullOrEmpty()) {
+                        searchEditText.setText(spokenText)
+                        items = model.searchItems(spokenText)
+                        updateListView()
+                    }
+                }
+            }
+        micButton.setOnClickListener {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                == PackageManager.PERMISSION_GRANTED
+            ) {
+                startVoiceRecognition()
+            } else {
+                permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+            }
+        }
+
         addButton.setOnClickListener {
             val intent = Intent(this, AddEditActivity::class.java)
             startActivity(intent)
         }
-
-        // Stats button
         statsButton.setOnClickListener {
             val intent = Intent(this, StatsActivity::class.java)
             startActivity(intent)
         }
 
-        // Item click - go to edit
+        // edit
         listView.setOnItemClickListener { _, _, position, _ ->
             val item = items[position]
             val intent = Intent(this, AddEditActivity::class.java)
@@ -100,7 +119,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Item long click - delete
+        // delete
         listView.setOnItemLongClickListener { _, _, position, _ ->
             val item = items[position]
             model.deleteItem(item.id)
@@ -108,24 +127,7 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-        micButton.setOnClickListener {
-            if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-
-                requestPermissions(
-                    arrayOf(android.Manifest.permission.RECORD_AUDIO),
-                    RECORD_AUDIO_PERMISSION_CODE
-                )
-            } else {
-                speechRecognizer.startListening(speechIntent)
-            }
-        }
-
-
-        // Set up advertising
         setupAdvertising()
-
-        // Update stats
         updateStats()
     }
 
@@ -163,7 +165,6 @@ class MainActivity : AppCompatActivity() {
         val adSize = AdSize(AdSize.FULL_WIDTH, AdSize.AUTO_HEIGHT)
         adView.setAdSize(adSize)
 
-        // Test ad unit ID
         val adUnitId = "ca-app-pub-3940256099942544/6300978111"
         adView.adUnitId = adUnitId
 
@@ -190,44 +191,15 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        if (requestCode == RECORD_AUDIO_PERMISSION_CODE &&
-            grantResults.isNotEmpty() &&
-            grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-            speechRecognizer.startListening(speechIntent)
+    private fun startVoiceRecognition() {
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(
+                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+            )
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
         }
+        speechLauncher.launch(intent)
     }
-
-    override fun onStart() {
-        super.onStart()
-
-        speechRecognizer.setRecognitionListener(object : RecognitionListener {
-            override fun onResults(results: Bundle?) {
-                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                val spokenText = matches?.get(0) ?: ""
-
-                // Put the spoken text into the search bar
-                searchEditText.setText(spokenText)
-
-                // Trigger your existing search button
-                val searchButton = findViewById<Button>(R.id.searchButton)
-                searchButton.performClick()
-            }
-
-            override fun onError(error: Int) {}
-            override fun onReadyForSpeech(params: Bundle?) {}
-            override fun onBeginningOfSpeech() {}
-            override fun onRmsChanged(rmsdB: Float) {}
-            override fun onBufferReceived(buffer: ByteArray?) {}
-            override fun onEndOfSpeech() {}
-            override fun onPartialResults(partialResults: Bundle?) {}
-            override fun onEvent(eventType: Int, params: Bundle?) {}
-        })
-    }
-
-
 
 }
